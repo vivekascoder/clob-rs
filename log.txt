@@ -1,0 +1,35 @@
+
+running 0 tests
+
+successes:
+
+successes:
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 2 tests
+test tests::test_orderbook ... ok
+test tests::benchmark_orderbook ... ok
+
+successes:
+
+---- tests::test_orderbook stdout ----
+Book { asks: RefCell { value: [Order { quantity: 251, max_price: 97, sender: Sender { id: 3b42e6d9-f2ab-4727-8e48-fa1fe3abd2be } }, Order { quantity: 318, max_price: 89, sender: Sender { id: 09ab50d6-9abc-4732-979c-f7b2fa6e4b81 } }, Order { quantity: 141, max_price: 54, sender: Sender { id: 2086d21c-ebf1-4017-83bc-5bed76641c38 } }, Order { quantity: 225, max_price: 28, sender: Sender { id: 217f55f4-b1ab-47b0-9775-035a7f5e855d } }] }, bids: RefCell { value: [] } }
+
+
+successes:
+    tests::benchmark_orderbook
+    tests::test_orderbook
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 0 tests
+
+successes:
+
+successes:
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
