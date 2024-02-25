@@ -1,5 +1,6 @@
 // let's write a simple order matching algo.
 #![feature(test)]
+#![feature(btree_cursors)]
 
 use clob::clob::{Book, Sender};
 extern crate test;
