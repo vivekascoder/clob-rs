@@ -1,4 +1,8 @@
-use std::{cell::RefCell, collections::BTreeMap, ops::Bound};
+use std::{
+    cell::RefCell,
+    collections::BTreeMap,
+    ops::{Bound, Range},
+};
 
 use anyhow::{anyhow, Result};
 use std::collections::btree_map::CursorMut;
@@ -63,73 +67,52 @@ impl Book {
 
         // if can't fill completely
         if qty_left > 0 {
-            if let Some(lo) = self.asks.borrow_mut().get_mut(&max_price) {
+            if self.asks.borrow().contains_key(&max_price) {
+                let mut asks_mut = self.asks.borrow_mut();
+                let lo = asks_mut.get_mut(&max_price).unwrap();
+
                 lo.push(order);
             } else {
                 self.asks.borrow_mut().insert(max_price, vec![order]);
             }
         }
 
+        // println!("{:#?}", self.asks.borrow());
+
         Ok(())
     }
 
+    /// try to match the orders from current orderbook.
     fn match_order(&self, order: &mut Order, is_bid: bool) -> anyhow::Result<u64> {
-        // try to match the orders from current orderbook.
-
-        let cursor;
-        if is_bid {
-            cursor = self
-                .asks
-                .borrow_mut()
-                .upper_bound_mut(Bound::Included(&order.max_price));
+        let mut opp_order_mut = if is_bid {
+            self.asks.borrow_mut()
         } else {
-            cursor = self
-                .bids
-                .borrow_mut()
-                .upper_bound_mut(Bound::Included(&order.max_price));
+            self.bids.borrow_mut()
+        };
+
+        for (op_order_price, op_orders) in opp_order_mut.range_mut(0..(order.max_price + 1)) {
+            // println!(
+            //     "op_order price, max price: {}, {}",
+            //     op_order_price, &order.max_price
+            // );
+            assert!(op_order_price <= &order.max_price);
+
+            if op_orders.is_empty() {
+                continue;
+            }
+
+            op_orders.retain_mut(|op_order| {
+                if op_order.quantity > order.quantity {
+                    op_order.quantity -= order.quantity;
+                    order.quantity = 0;
+                    return true;
+                } else {
+                    // case: op_order.quantity <= order.quantity
+                    order.quantity -= op_order.quantity;
+                    return false;
+                }
+            });
         }
-
-        while let (op_order_price, op_orders) = cursor.value_mut() {}
-
-        // let len;
-        // if is_bid {
-        //     len = self.asks.borrow().len();
-        // } else {
-        //     len = self.bids.borrow().len();
-        // }
-
-        // let mut i = 0;
-        // while i < len && order.quantity > 0 {
-        //     let mut opp_orders_mut;
-        //     if is_bid {
-        //         opp_orders_mut = self.asks.borrow_mut();
-        //     } else {
-        //         opp_orders_mut = self.bids.borrow_mut();
-        //     };
-
-        //     let opp_order = opp_orders_mut.get_mut(i);
-        //     if let None = opp_order {
-        //         break;
-        //     }
-        //     let opp_order = opp_order.unwrap();
-
-        //     if opp_order.max_price > order.max_price {
-        //         i += 1;
-        //         continue;
-        //     }
-
-        //     if opp_order.quantity == order.quantity {
-        //         order.quantity = 0;
-        //         opp_orders_mut.remove(i);
-        //     } else if opp_order.quantity > order.quantity {
-        //         opp_order.quantity -= order.quantity;
-        //         order.quantity = 0;
-        //         i += 1;
-        //     } else if opp_order.quantity < order.quantity {
-        //         order.quantity -= opp_order.quantity;
-        //         opp_orders_mut.remove(i);
-        //     }
-        // }
 
         Ok(order.quantity)
     }
@@ -145,12 +128,16 @@ impl Book {
 
         // if can't fill completely
         if qty_left > 0 {
-            if let Some(lo) = self.bids.borrow_mut().get_mut(&max_price) {
+            if self.bids.borrow().contains_key(&max_price) {
+                let mut bids_mut = self.bids.borrow_mut();
+                let lo = bids_mut.get_mut(&max_price).unwrap();
+
                 lo.push(order);
             } else {
                 self.bids.borrow_mut().insert(max_price, vec![order]);
             }
         }
+        // println!("{:#?}", self.asks.borrow());
 
         Ok(())
     }

@@ -6,10 +6,10 @@ fn main() -> anyhow::Result<()> {
     let start = SystemTime::now();
 
     let book = Book::new();
+    let mut r = rand::thread_rng();
 
     for i in 1..100000 {
         let sender = Sender::new();
-        let mut r = rand::thread_rng();
         if r.gen_bool(1.0 / 3.0) {
             // generate buy order
             book.ask(r.gen_range(1..100), r.gen_range(10..1000), sender)
